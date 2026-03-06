@@ -5,17 +5,11 @@ class GaussianBayesClassifier:
 
     def __init__(self):
         self.classes = None
-        self.pi = None        # class priors
-        self.mu = None        # class means
-        self.sigma = None     # class covariance matrices
+        self.pi = None
+        self.mu = None
+        self.sigma = None
 
     def fit(self, X, y):
-        """
-        Train the classifier by computing:
-        - class prior probabilities
-        - class means
-        - class covariance matrices
-        """
 
         self.classes = np.unique(y)
         n_classes = len(self.classes)
@@ -27,15 +21,47 @@ class GaussianBayesClassifier:
 
         for c in self.classes:
 
-            # Get all samples belonging to class c
             X_c = X[y == c]
 
-            # Prior probability P(Y=c)
+            # class prior
             self.pi[int(c)] = X_c.shape[0] / X.shape[0]
 
-            # Mean vector
+            # class mean
             self.mu[int(c)] = np.mean(X_c, axis=0)
 
-            # Covariance matrix
+            # covariance matrix
             diff = X_c - self.mu[int(c)]
             self.sigma[int(c)] = np.dot(diff.T, diff) / X_c.shape[0]
+
+    def gaussian_pdf(self, x, mean, cov):
+
+        n = len(mean)
+
+        diff = x - mean
+        inv = np.linalg.inv(cov)
+        det = np.linalg.det(cov)
+
+        numerator = np.exp(-0.5 * np.dot(np.dot(diff.T, inv), diff))
+        denominator = np.sqrt(((2 * np.pi) ** n) * det)
+
+        return numerator / denominator
+
+    def predict(self, X):
+
+        predictions = []
+
+        for x in X:
+
+            probs = []
+
+            for c in self.classes:
+
+                prior = self.pi[int(c)]
+                likelihood = self.gaussian_pdf(x, self.mu[int(c)], self.sigma[int(c)])
+
+                posterior = prior * likelihood
+                probs.append(posterior)
+
+            predictions.append(np.argmax(probs))
+
+        return np.array(predictions)
