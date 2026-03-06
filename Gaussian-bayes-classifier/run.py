@@ -1,18 +1,24 @@
 import numpy as np
-import sys
-import os
+from Src.bayes_classifier import GaussianBayesClassifier
 
-sys.path.append("src")
-
-from bayes_classifier import GaussianBayesClassifier
-
+# Load data
 X_train = np.genfromtxt("Data/X_train-3.csv", delimiter=",")
-y_train = np.genfromtxt("Data/y_train-2.csv", delimiter=",")
+y_train = np.genfromtxt("Data/y_train-2.csv")
 X_test = np.genfromtxt("Data/X_test_all-1.csv", delimiter=",")
 
-model = GaussianBayesClassifier()
-model.fit(X_train, y_train)
+# Create classifier
+classifier = GaussianBayesClassifier()
 
-predictions = model.predict(X_test)
+# Train model
+classifier.fit(X_train, y_train)
 
-print(predictions)
+# Predict test data
+y_pred = classifier.predict(X_test)
+
+# Print predictions
+print(y_pred)
+
+# Save predictions
+np.savetxt("results/predictions.csv", y_pred, delimiter=",", fmt="%d")
+
+print("Predictions saved to results/predictions.csv")
